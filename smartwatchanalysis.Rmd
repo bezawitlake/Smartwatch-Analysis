@@ -1,0 +1,319 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+```{r}
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(lubridate)
+
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+library(tidyr)
+```
+
+```{r}
+activity <- read.csv("dailyActivity_merged.csv")
+calories <- read.csv("hourlyCalories_merged.csv")
+sleep <- read.csv("sleepDay_merged.csv")
+weight <- read.csv("weightLogInfo_merged.csv")
+```
+```{r}
+head(activity)
+
+```
+```{r}
+head(calories)
+```
+
+```{r}
+calories$ActivityHour=as.POSIXct(calories$ActivityHour, format="%m/%d/%Y %I:%M:%S %p", tz=Sys.timezone())
+calories$time <- format(calories$ActivityHour, format = "%H:%M:%S")
+calories$date <- format(calories$ActivityHour, format = "%m/%d/%y")
+```
+```{r}
+head(calories)
+```
+```{r}
+activity$ActivityDate=as.POSIXct(activity$ActivityDate, format="%m/%d/%Y", tz=Sys.timezone())
+activity$date <- format(activity$ActivityDate, format = "%m/%d/%y")
+# sleep
+sleep$SleepDay=as.POSIXct(sleep$SleepDay, format="%m/%d/%Y %I:%M", tz=Sys.timezone())
+sleep$date <- format(sleep$SleepDay, format = "%m/%d/%y")
+```
+```{r}
+head(activity)
+```
+```{r}
+head(sleep)
+```
+
+```{r}
+weight$Date=as.POSIXct(weight$Date, format="%m/%d/%Y", tz=Sys.timezone())
+head(weight)
+```
+```{r}
+head(calories)
+```
+
+```{r}
+n_distinct(activity$Id)
+n_distinct(calories$Id)
+n_distinct(sleep$Id)
+n_distinct(weight$Id)
+```
+
+```{r}
+activity %>%  
+  select(TotalSteps,
+         TotalDistance,
+         SedentaryMinutes, Calories) %>%
+  summary()
+```
+
+```{r}
+activity %>%
+  select(VeryActiveMinutes, FairlyActiveMinutes, LightlyActiveMinutes) %>%
+  summary()
+```
+
+```{r}
+calories %>%
+  select(Calories) %>%
+  summary()
+```
+
+```{r}
+sleep %>%
+  select(TotalSleepRecords, TotalMinutesAsleep, TotalTimeInBed) %>%
+  summary()
+```
+
+```{r}
+weight %>%
+  select(WeightKg, BMI) %>%
+  summary()
+```
+```{r}
+calories %>%
+  select(Calories) %>%
+  summary()
+
+sleep %>%
+  select(TotalSleepRecords, TotalMinutesAsleep, TotalTimeInBed) %>%
+  summary()
+
+weight %>%
+  select(WeightKg, BMI) %>%
+  summary()
+```
+```{r}
+merged_data <- merge(sleep, activity, by=c('Id', 'date'))
+head(merged_data)
+```
+```{r}
+ggplot(data = activity, aes(x = TotalSteps, y = Calories)) +
+  geom_point(color = "blue") +  # Change the color of the points to blue
+  geom_smooth(color = "black") +  # Change the color of the smoothed line to red
+  labs(title = "Total Steps vs. Calories")
+```
+
+```{r}
+ggplot(data = activity, aes(x = TotalDistance, y = Calories)) +
+  geom_point(color = "blue") +  # Change the color of the points to blue
+  geom_smooth(color = "black") +  # Change the color of the smoothed line to red
+  labs(title = "Total distance vs. Calories")
+```
+
+```{r}
+ggplot(data=sleep, aes(x=TotalMinutesAsleep, y=TotalTimeInBed)) + 
+  geom_point(color = "blue") +  
+  geom_smooth(color = "black") +
+  labs(title="Total Minutes Asleep vs. Total Time in Bed")
+```
+```{r}
+correlation <- cor(sleep$TotalMinutesAsleep, sleep$TotalTimeInBed)
+print(correlation)
+```
+```{r}
+ggplot(data=merged_data, aes(x=TotalMinutesAsleep, y=SedentaryMinutes)) + 
+geom_point(color='red') + geom_smooth(color='black') +
+  labs(title="Minutes Asleep vs. Sedentary Minutes")
+```
+```{r}
+correlation <- cor(merged_data$TotalMinutesAsleep, merged_data$SedentaryMinutes)
+print(correlation)
+```
+```{r}
+
+```
+
+```{r}
+total_time <- colSums(activity[, c("VeryActiveMinutes", "FairlyActiveMinutes", "LightlyActiveMinutes", "SedentaryMinutes")])
+
+# Create a data frame for the pie chart
+pie_data <- data.frame(
+  Activity = c("Very Active", "Moderately Active", "Lightly Active", "Sedentary"),
+  Time = total_time
+)
+
+# Calculate the proportions for each activity level
+pie_data$Proportion <- pie_data$Time / sum(pie_data$Time)
+
+# Create the pie chart
+pie_chart <- ggplot(pie_data, aes(x = "", y = Proportion, fill = Activity)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(fill = "Activity")
+
+# Display the pie chart
+print(pie_chart)
+```
+
+
+```{r}
+head(merged_data)
+```
+
+```{r}
+line_plot_steps <- ggplot(merged_data, aes(x = ActivityDate, y = TotalSteps)) +
+  geom_line() +
+  xlab("Date") +
+  ylab("Total Steps") +
+  theme_minimal()
+
+# Display the line plot
+print(line_plot_steps)
+```
+
+```{r}
+line_plot_calories <- ggplot(merged_data, aes(x = ActivityDate, y = Calories)) +
+  geom_line() +
+  xlab("Date") +
+  ylab("Calories") +
+  theme_minimal()
+
+# Display the line plot
+print(line_plot_calories)
+```
+```{r}
+head(merged_data)
+```
+
+```{r}
+activity_times <- data.frame(
+  Activity = c("Very Active", "Moderately Active", "Lightly Active", "Sedentary"),
+  Time = c(sum(merged_data$VeryActiveMinutes),
+           sum(merged_data$FairlyActiveMinutes),
+           sum(merged_data$LightlyActiveMinutes),
+           sum(merged_data$SedentaryMinutes))
+)
+
+# Create a bar plot for activity times
+bar_plot_activity_times <- ggplot(activity_times, aes(x = Activity, y = Time)) +
+  geom_col(fill = "steelblue") +
+  xlab("Activity") +
+  ylab("Time (minutes)") +
+  theme_minimal()
+
+# Display the bar plot
+print(bar_plot_activity_times)
+```
+```{r}
+histogram_plot <- ggplot(data = merged_data, aes(x = VeryActiveDistance)) +
+  geom_histogram(binwidth = 10, fill = "steelblue", color = "white") +
+  xlab("Very Active Distance") +
+  ylab("Frequency") +
+  ggtitle("Histogram of Very Active Distance") +
+  theme_minimal()
+
+# Display the histogram
+print(histogram_plot)
+```
+```{r}
+```
+
+```{r}
+ stacked_data <- data.frame(
+Id = merged_data$Id,
+Very_Active = merged_data$VeryActiveDistance,
+Moderately_Active = merged_data$ModeratelyActiveDistance,
+Light_Active = merged_data$LightActiveDistance
+)
+
+stacked_bar_plot <- ggplot() +
+geom_bar(data = stacked_data, aes(x = Id, y = Very_Active, fill = "Very Active"), stat = "identity") +
+geom_bar(data = stacked_data, aes(x = Id, y = Moderately_Active, fill = "Moderately Active"), stat = "identity") +
+geom_bar(data = stacked_data, aes(x = Id, y = Light_Active, fill = "Light Active"), stat = "identity") +
+xlab("Participant") +
+ylab("Distance (Kilometers)") +
+scale_fill_manual(values = c("steelblue", "darkorange", "limegreen"),
+labels = c("Very Active", "Moderately Active", "Light Active")) +
+theme_minimal()
+print(stacked_bar_plot)
+```
+```{r}
+box_plot <- ggplot(data = merged_data, aes(x = "", y = VeryActiveDistance)) +
+  geom_boxplot(fill = "steelblue", color = "black") +
+  xlab("") +
+  ylab("Very Active Distance") +
+  ggtitle("Box Plot of Very Active Distance") +
+  theme_minimal()
+
+# Display the box plot
+print(box_plot)
+```
+```{r}
+head(merged_data)
+```
+
+```{r}
+# Calculate the steps for a day, week, and month
+total_steps_day <- sum(merged_data$TotalSteps)
+total_steps_week <- sum(merged_data$TotalSteps[1:7])
+total_steps_month <- sum(merged_data$TotalSteps[1:30])
+
+# Create a dataframe for plotting
+steps_data <- data.frame(
+  Period = c("Day", "Week", "Month"),
+  Steps = c(total_steps_day, total_steps_week, total_steps_month)
+)
+
+# Create a bar plot
+bar_plot <- ggplot(steps_data, aes(x = Period, y = Steps)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  xlab("Time Period") +
+  ylab("Total Steps") +
+  ggtitle("Total Steps in a Day, Week, and Month") +
+  theme_minimal()
+
+# Display the bar plot
+print(bar_plot)
+```
+
