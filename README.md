@@ -6,13 +6,10 @@ This GitHub repository provides a beginner's guide to smartwatch data analysis u
 # Getting Started
 To get started with the tutorial, follow these steps:
 
-Install R: If you do not have R installed, follow the instructions on the R Project website to download and install R.
-
-Clone or download the repository: Clone this repository to your local machine using Git or download it as a ZIP file and extract it.
-
-Install required packages:
-
-Explore the tutorial: The tutorial is provided in the form of an R Markdown (.Rmd) file. Open the file in an R-compatible text editor or an integrated development environment (IDE) such as RStudio. Follow the instructions and code snippets provided in the tutorial to learn and practice smartwatch data analysis using R.
+1. Install R: If you do not have R installed, follow the instructions on the R Project website to download and install R.
+2. Clone or download the repository: Clone this repository to your local machine using Git or download it as a ZIP file and extract it.
+3. Install required packages:
+4. Explore the tutorial: The tutorial is provided in the form of an R Markdown (.Rmd) file. Open the file in an R-compatible text editor or an integrated development environment (IDE) such as RStudio. Follow the instructions and code snippets provided in the tutorial to learn and practice smartwatch data analysis using R.
 
 # Contents
 The tutorial covers the following topics:
